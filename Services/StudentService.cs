@@ -1,3 +1,4 @@
+
 using WebApiPractice.DTOs;
 using WebApiPractice.Models;
 using WebApiPractice.Repositories;
@@ -21,14 +22,7 @@ public class StudentService : IStudentService
     {
         var students = await _repository.GetAllAsync();
 
-        return students.Select(s => new StudentDto
-        {
-            Id = s.Id,
-            Name = s.Name,
-            Email = s.Email,
-            Age = s.Age,
-            DepartmentName = s.Department?.DepartmentName
-        }).ToList();
+        return students.Select(MapToDto).ToList();
     }
 
     public async Task<StudentDto?> GetStudentByIdAsync(int id)
@@ -41,7 +35,8 @@ public class StudentService : IStudentService
         return MapToDto(student);
     }
 
-    public async Task<StudentDto> AddStudentAsync(CreateStudentDto studentDto)
+    public async Task<StudentDto> AddStudentAsync(
+        CreateStudentDto studentDto)
     {
         var student = new Student
         {
@@ -77,6 +72,7 @@ public class StudentService : IStudentService
         return MapToDto(student);
     }
 
+
     public async Task<bool> DeleteStudentAsync(int id)
     {
         var student = await _repository.GetByIdAsync(id);
@@ -84,16 +80,18 @@ public class StudentService : IStudentService
         if (student is null)
             return false;
 
-        object value = await _repository.DeleteAsync(student);
+        await _repository.DeleteAsync(student);
 
         return true;
     }
+
 
     public Task<bool> EmailExistsAsync(
         string email,
         int? excludeStudentId = null)
     {
-        return _repository.EmailExistsAsync(email, excludeStudentId);
+        return _repository.EmailExistsAsync(
+            email, excludeStudentId);
     }
 
     private static StudentDto MapToDto(Student student)
@@ -108,104 +106,78 @@ public class StudentService : IStudentService
         };
     }
 
-    public async Task<List<StudentDto>> SearchStudentsByNameAsync(string search)
+    public async Task<List<StudentDto>> SearchStudentsByNameAsync(
+        string search)
     {
         var students = await _repository.SearchByNameAsync(search);
 
-        return students.Select(s => new StudentDto
-        {
-            Id = s.Id,
-            Name = s.Name,
-            Email = s.Email,
-            Age = s.Age,
-            DepartmentName = s.Department?.DepartmentName
-        }).ToList();
+        return students.Select(MapToDto).ToList();
     }
 
-    public async Task<List<StudentDto>> GetStudentsByDepartmentIdAsync(int departmentId)
+    public async Task<List<StudentDto>> GetStudentsByDepartmentIdAsync(
+        int departmentId)
     {
-        var students = await _repository.GetByDepartmentIdAsync(departmentId);
+        var students =
+            await _repository.GetByDepartmentIdAsync(departmentId);
 
-        return students.Select(s => new StudentDto
-        {
-            Id = s.Id,
-            Name = s.Name,
-            Email = s.Email,
-            Age = s.Age,
-            DepartmentName = s.Department?.DepartmentName
-        }).ToList();
+        return students.Select(MapToDto).ToList();
     }
 
     public async Task<PagedResult<StudentDto>> GetPagedStudentsAsync(
-   int pageNumber,
-   int pageSize)
+        int pageNumber,
+        int pageSize)
     {
         if (pageNumber < 1)
-            throw new ArgumentException("Page number must be at least 1.");
+            throw new ArgumentException(
+                "Page number must be at least 1.");
 
         if (pageSize < 1 || pageSize > 100)
             throw new ArgumentException(
                 "Page size must be between 1 and 100.");
 
         var students = await _repository.GetPagedAsync(
-            pageNumber,
-            pageSize);
+            pageNumber, pageSize);
 
-        var totalCount = await _repository.GetTotalCountAsync();
-
-        var studentDtos = students.Select(s => new StudentDto
-        {
-            Id = s.Id,
-            Name = s.Name,
-            Email = s.Email,
-            Age = s.Age,
-            DepartmentName = s.Department?.DepartmentName
-        }).ToList();
+        var totalCount =
+            await _repository.GetTotalCountAsync();
 
         return new PagedResult<StudentDto>
         {
-            Items = studentDtos,
+            Items = students.Select(MapToDto).ToList(),
             PageNumber = pageNumber,
             PageSize = pageSize,
             TotalCount = totalCount
         };
     }
-    public async Task<PagedResult<StudentDto>> GetFilteredAndPagedStudentsAsync(
-   string? search,
-   int? departmentId,
-   string? sortBy,
-   string? sortOrder,
-   int pageNumber,
-   int pageSize)
+
+    public async Task<PagedResult<StudentDto>>
+        GetFilteredAndPagedStudentsAsync(
+            string? search,
+            int? departmentId,
+            string? sortBy,
+            string? sortOrder,
+            int pageNumber,
+            int pageSize)
     {
-        var students = await _repository.GetFilteredAndPagedAsync(
-            search,
-            departmentId,
-            sortBy ?? "id",
-            sortOrder ?? "asc",
-            pageNumber,
-            pageSize);
+        var students =
+            await _repository.GetFilteredAndPagedAsync(
+                search,
+                departmentId,
+                sortBy ?? "id",
+                sortOrder ?? "asc",
+                pageNumber,
+                pageSize);
 
-        var totalCount = await _repository.GetFilteredCountAsync(
-            search,
-            departmentId);
-
-        var studentDtos = students.Select(s => new StudentDto
-        {
-            Id = s.Id,
-            Name = s.Name,
-            Email = s.Email,
-            Age = s.Age,
-            DepartmentName = s.Department?.DepartmentName
-        }).ToList();
+        var totalCount =
+            await _repository.GetFilteredCountAsync(
+                search, departmentId);
 
         return new PagedResult<StudentDto>
         {
-            Items = studentDtos,
+            Items = students.Select(MapToDto).ToList(),
             PageNumber = pageNumber,
             PageSize = pageSize,
             TotalCount = totalCount
         };
     }
-
 }

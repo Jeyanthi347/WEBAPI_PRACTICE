@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using WebApiPractice.DTOs;
 using WebApiPractice.Services;
+using static WebApiPractice.Services.IDepartmentService;
 
 namespace WebApiPractice.Controllers;
 
@@ -95,4 +96,37 @@ public class DepartmentsController : ControllerBase
             _ => StatusCode(500)
         };
     }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAllDepartments(
+    [FromQuery] string? search,
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10)
+    {
+        if (pageNumber < 1)
+        {
+            return BadRequest(new
+            {
+                message = "Page number must be greater than or equal to 1."
+            });
+        }
+
+        if (pageSize < 1 || pageSize > 100)
+        {
+            return BadRequest(new
+            {
+                message = "Page size must be between 1 and 100."
+            });
+        }
+
+        var departments =
+            await _departmentService.GetFilteredAndPagedDepartmentsAsync(
+                search,
+                pageNumber,
+                pageSize);
+
+        return Ok(departments);
+    }
+
+
 }
