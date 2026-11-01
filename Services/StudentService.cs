@@ -84,7 +84,7 @@ public class StudentService : IStudentService
         if (student is null)
             return false;
 
-        await _repository.DeleteAsync(student);
+        object value = await _repository.DeleteAsync(student);
 
         return true;
     }
@@ -152,6 +152,43 @@ public class StudentService : IStudentService
             pageSize);
 
         var totalCount = await _repository.GetTotalCountAsync();
+
+        var studentDtos = students.Select(s => new StudentDto
+        {
+            Id = s.Id,
+            Name = s.Name,
+            Email = s.Email,
+            Age = s.Age,
+            DepartmentName = s.Department?.DepartmentName
+        }).ToList();
+
+        return new PagedResult<StudentDto>
+        {
+            Items = studentDtos,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
+    }
+    public async Task<PagedResult<StudentDto>> GetFilteredAndPagedStudentsAsync(
+   string? search,
+   int? departmentId,
+   string? sortBy,
+   string? sortOrder,
+   int pageNumber,
+   int pageSize)
+    {
+        var students = await _repository.GetFilteredAndPagedAsync(
+            search,
+            departmentId,
+            sortBy ?? "id",
+            sortOrder ?? "asc",
+            pageNumber,
+            pageSize);
+
+        var totalCount = await _repository.GetFilteredCountAsync(
+            search,
+            departmentId);
 
         var studentDtos = students.Select(s => new StudentDto
         {
