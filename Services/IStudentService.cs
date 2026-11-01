@@ -20,13 +20,10 @@ public interface IStudentService
 
     Task<List<StudentDto>> SearchStudentsByNameAsync(string search);
 
-    Task<bool> EmailExistsAsync(string email, int? excludeStudentId = null);
-
-    Task<List<StudentDto>> SearchStudentsByNameAsync(string search);
+   
     Task<List<StudentDto>> GetStudentsByDepartmentIdAsync(int departmentId);
 
-    Task<List<StudentDto>> SearchStudentsByNameAsync(string search);
-    Task<List<StudentDto>> GetStudentsByDepartmentIdAsync(int departmentId);
+    
 
     Task<PagedResult<StudentDto>> GetPagedStudentsAsync(
     int pageNumber,
